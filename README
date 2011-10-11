@@ -5,3 +5,7 @@ The platform is being developed at the Center for Sustainability and the Global 
 This is a Web2Py application, that requires a Python environment running Web2Py (http://web2py.com/). The application is being designed to be compatible with Sahana Eden disaster management tools (http://eden.sahanafoundation.org/). Our code has been inspired by the work of the Sahana Foundation (http://sahanafoundation.org/).
 
 Please visit our website for more details: http://dot.skapes.org
+
+Documentation:
+The code is documented with Sphinx in /doc directory. To use the autodoc function to contribute code, add this web2py application to your Python path, e.g. 
+export PYTHONPATH=$PYTHONPATH:/path/to/dotSkapes
