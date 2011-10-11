@@ -1,0 +1,212 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>wiki – Wiki Documentation &mdash; dotSkapes v0.4 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.4',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="dotSkapes v0.4 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">dotSkapes v0.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="wiki-wiki-documentation">
+<h1><tt class="xref py py-mod docutils literal"><span class="pre">wiki</span></tt> &#8211; Wiki Documentation<a class="headerlink" href="#wiki-wiki-documentation" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th class="field-name">Version:</th><td class="field-body">0.4</td>
+</tr>
+<tr class="field"><th class="field-name">Source:</th><td class="field-body"><a href="#id5"><span class="problematic" id="id6">github.org_</span></a></td>
+</tr>
+<tr class="field"><th class="field-name">Bug tracker:</th><td class="field-body">&#8216;github.org/issues &lt;<a href="#id1"><span class="problematic" id="id2">`</span></a><a class="reference external" href="https://github.com/dotSkapes/dotSkapes/issues?sort=created&amp;direction=desc&amp;state=open">https://github.com/dotSkapes/dotSkapes/issues?sort=created&amp;direction=desc&amp;state=open</a>&gt;&#8217;_</td>
+</tr>
+</tbody>
+</table>
+<p>Consider <a href="#id7"><span class="problematic" id="id8">wikiSkapes_</span></a> an adaptation of Massimo DiPierro&#8217;s <a href="#id9"><span class="problematic" id="id10">plugin_wiki_</span></a>.
+Basically it adds a RESTful interface and MongoDB backend to plugin_wiki:</p>
+<ul class="simple">
+<li><strong>MongoDB</strong>: Document database</li>
+<li><strong>RESTful</strong>: Architecture for delivering resources</li>
+</ul>
+<p>For complete list of additional parameters reffer to : YXZ.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This requires and instance of Web2Py to work</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This is integrated into the dotSkapes stack (including authentication). It can be found as a stand-alone on github wikiSkapes</p>
+</div>
+<div class="section" id="details-about-implementation">
+<h2>Details about implementation<a class="headerlink" href="#details-about-implementation" title="Permalink to this headline">¶</a></h2>
+<p><a href="#id11"><span class="problematic" id="id12">wikiSkapes_</span></a> is useful for serving scientific content</p>
+<p>Here is a demo of RESTful call</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">beaker_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s">&#39;sources&#39;</span><span class="p">,</span> <span class="n">expire</span><span class="o">=</span><span class="s">&#39;never&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s">&#39;memory&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And another of the LaTeX syntax</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">beaker_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s">&#39;sources&#39;</span><span class="p">,</span> <span class="n">expire</span><span class="o">=</span><span class="s">&#39;never&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s">&#39;memory&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>On your own <a class="reference external" href="http://pylonshq.com">Pylons</a> application, inside <tt class="docutils literal"><span class="pre">&lt;app&gt;/lib/helpers.py</span></tt> you add:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">minwebhelpers</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<p>Then, inside a template you could have:</p>
+<div class="highlight-html+mako"><div class="highlight"><pre><span class="nt">&lt;head&gt;</span>
+  ${ h.javascript_link(&#39;/js/file1.js&#39;,
+                       &#39;/js/file2.js&#39;,
+                       minified=True,
+                       combined=True,
+                                                                                               combined_filename=&#39;all_javascript_files&#39;) }
+  ${ h.stylesheet_link(&#39;/css/style1.css&#39;,
+                       &#39;/css/style2.css&#39;,
+                       minified=True,
+                       combined=True,
+                       beaker_kwargs=dict(invalidate_on_startup=False)) }
+<span class="nt">&lt;/head&gt;</span>
+</pre></div>
+</div>
+<p>The above would mean <tt class="docutils literal"><span class="pre">file1.js</span></tt> and <tt class="docutils literal"><span class="pre">file2.js</span></tt> would be combined and then
+minimized (same story for css files).</p>
+</div>
+<div class="section" id="instalation">
+<h2>Instalation<a class="headerlink" href="#instalation" title="Permalink to this headline">¶</a></h2>
+<p>It&#8217;s as easy as:</p>
+<div class="highlight-python"><pre>sudo easy_install MinificationWebHelpers</pre>
+</div>
+<p>Or if you wish to install current trunk:</p>
+<div class="highlight-python"><pre>sudo easy_install http://bitbucket.org/iElectric/minificationwebhelpers/get/tip.zip</pre>
+</div>
+</div>
+<div class="section" id="api">
+<h2>API<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="modules.savage.graph.base.BaseGraph">
+<em class="property">class </em><tt class="descclassname">modules.savage.graph.base.</tt><tt class="descname">BaseGraph</tt><big>(</big><em>canvasType</em>, <em>**attr</em><big>)</big><a class="reference internal" href="_modules/modules/savage/graph/base.html#BaseGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#modules.savage.graph.base.BaseGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Demo of a docstring</p>
+<dl class="method">
+<dt id="modules.savage.graph.base.BaseGraph.attachCanvas">
+<tt class="descname">attachCanvas</tt><big>(</big><em>canvasType</em>, <em>**attr</em><big>)</big><a class="reference internal" href="_modules/modules/savage/graph/base.html#BaseGraph.attachCanvas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#modules.savage.graph.base.BaseGraph.attachCanvas" title="Permalink to this definition">¶</a></dt>
+<dd><p>another docstring here</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="changelog">
+<h2>Changelog<a class="headerlink" href="#changelog" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">wiki</span></tt> &#8211; Wiki Documentation</a><ul>
+<li><a class="reference internal" href="#details-about-implementation">Details about implementation</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+<li><a class="reference internal" href="#instalation">Instalation</a></li>
+<li><a class="reference internal" href="#api">API</a></li>
+<li><a class="reference internal" href="#changelog">Changelog</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/intro.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">dotSkapes v0.4 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, dotSkapes.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>
