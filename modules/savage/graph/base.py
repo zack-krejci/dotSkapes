@@ -15,6 +15,9 @@ from re import match
 
 
 class BaseGraph (PrintableCanvas):
+    '''
+    Demo of a docstring
+    '''
     def __init__ (self, canvasType, **attr):
         if attr.has_key ('settings') and attr['settings']:
             self.applySettings (attr['settings'])
@@ -40,6 +43,7 @@ class BaseGraph (PrintableCanvas):
         self.initialFormatting ()
 
     def attachCanvas (self, canvasType, **attr):
+        '''another docstring here'''
         self.canvas = canvasType (width = self.settings.width - self.settings.leftMargin - self.settings.rightMargin, 
                                   height = self.settings.height - self.settings.topMargin - self.settings.bottomMargin, 
                                   x = self.settings.leftMargin,

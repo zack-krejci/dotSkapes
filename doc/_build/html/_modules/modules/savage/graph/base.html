@@ -1,0 +1,812 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>modules.savage.graph.base &mdash; dotSkapes v0.4 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.4',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="dotSkapes v0.4 documentation" href="../../../../index.html" />
+    <link rel="up" title="modules.savage.graph" href="../graph.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">dotSkapes v0.4 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../graph.html" accesskey="U">modules.savage.graph</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for modules.savage.graph.base</h1><div class="highlight"><pre>
+<span class="kn">from</span> <span class="nn">..graphics</span> <span class="kn">import</span> <span class="n">Canvas</span><span class="p">,</span> <span class="n">PrintableCanvas</span>
+<span class="kn">from</span> <span class="nn">..graphics.group</span> <span class="kn">import</span> <span class="n">Group</span><span class="p">,</span> <span class="n">Grouping</span>
+<span class="kn">from</span> <span class="nn">..graphics.shapes</span> <span class="kn">import</span> <span class="n">Line</span><span class="p">,</span> <span class="n">Rectangle</span><span class="p">,</span> <span class="n">Text</span><span class="p">,</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">..graphics.utils</span> <span class="kn">import</span> <span class="n">ViewBox</span><span class="p">,</span> <span class="n">Translate</span><span class="p">,</span> <span class="n">Rotate</span><span class="p">,</span> <span class="n">addAttr</span><span class="p">,</span> <span class="n">blank</span><span class="p">,</span> <span class="n">boolean</span>
+<span class="kn">from</span> <span class="nn">..graphics.color</span> <span class="kn">import</span> <span class="n">hex_to_color</span><span class="p">,</span> <span class="n">Color</span>
+
+<span class="kn">from</span> <span class="nn">..utils.struct</span> <span class="kn">import</span> <span class="n">Matrix</span>
+<span class="kn">from</span> <span class="nn">..utils.struct</span> <span class="kn">import</span> <span class="n">Vector</span> <span class="k">as</span> <span class="n">V</span>
+
+<span class="kn">from</span> <span class="nn">legend</span> <span class="kn">import</span> <span class="n">Legend</span>
+
+<span class="kn">from</span> <span class="nn">re</span> <span class="kn">import</span> <span class="n">match</span>
+
+
+<span class="k">class</span> <span class="nc">BaseGraph</span> <span class="p">(</span><span class="n">PrintableCanvas</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvasType</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseGraph"><a class="viewcode-back" href="../../../../intro.html#modules.savage.graph.base.BaseGraph">[docs]</a>        <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">has_key</span> <span class="p">(</span><span class="s">&#39;settings&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">attr</span><span class="p">[</span><span class="s">&#39;settings&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">applySettings</span> <span class="p">(</span><span class="n">attr</span><span class="p">[</span><span class="s">&#39;settings&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">formatSettings</span> <span class="p">(</span><span class="n">blank</span> <span class="p">())</span>
+        <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">has_key</span> <span class="p">(</span><span class="s">&#39;width&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">attr</span><span class="p">[</span><span class="s">&#39;width&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">has_key</span> <span class="p">(</span><span class="s">&#39;height&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">attr</span><span class="p">[</span><span class="s">&#39;height&#39;</span><span class="p">]</span>
+        
+        <span class="n">view</span> <span class="o">=</span> <span class="n">ViewBox</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+        <span class="n">PrintableCanvas</span><span class="o">.</span><span class="n">__init__</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">viewBox</span> <span class="o">=</span> <span class="n">view</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">addScript</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jsUtils</span> <span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addScript</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jsHighlight</span> <span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataGroup</span> <span class="o">=</span> <span class="n">Grouping</span> <span class="p">()</span>
+        <span class="k">if</span> <span class="n">canvasType</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attachCanvas</span> <span class="p">(</span><span class="n">canvasType</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataGroup</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialFormatting</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">attachCanvas</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvasType</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span> <span class="o">=</span> <span class="n">canvasType</span> <span class="p">(</span><span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">leftMargin</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">rightMargin</span><span class="p">,</span> 
+<div class="viewcode-block" id="BaseGraph.attachCanvas"><a class="viewcode-back" href="../../../../intro.html#modules.savage.graph.base.BaseGraph.attachCanvas">[docs]</a>                                  <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">topMargin</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">bottomMargin</span><span class="p">,</span> 
+                                  <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">leftMargin</span><span class="p">,</span>
+                                  <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">topMargin</span><span class="p">,</span>
+                                  <span class="nb">id</span><span class="o">=</span><span class="s">&#39;canvas-root&#39;</span><span class="p">,</span>
+                                  <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataGroup</span><span class="o">.</span><span class="n">draw</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">jsUtils</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;&quot;&quot;</span></div>
+<span class="s">  function registerEvent (object, event, method, scope, capture) {</span>
+<span class="s">    if (!scope)</span>
+<span class="s">      scope = window;</span>
+<span class="s">    if (!capture)</span>
+<span class="s">      capture = false;</span>
+<span class="s">    var func = function (event) {</span>
+<span class="s">      if (!event)</span>
+<span class="s">        event = window.event;</span>
+<span class="s">      return method.call (scope, event);</span>
+<span class="s">    }</span>
+
+<span class="s">    if (object.addEventListener)</span>
+<span class="s">      object.addEventListener (event, func, capture);</span>
+<span class="s">    else if (object.attachEvent)</span>
+<span class="s">      object.attachEvent (event, method, func, capture);</span>
+<span class="s">    else</span>
+<span class="s">      return false;</span>
+<span class="s">    return true;</span>
+<span class="s">  }</span>
+
+<span class="s">  function ViewBox (x, y, width, height) {</span>
+<span class="s">    this.x = parseFloat (x);</span>
+<span class="s">    this.y = parseFloat (y);</span>
+<span class="s">    this.width = parseFloat (width);</span>
+<span class="s">    this.height = parseFloat (height);</span>
+
+<span class="s">    this.quadrant = function (v) {</span>
+<span class="s">      var midX = this.x + (this.width / 2.0);</span>
+<span class="s">      var midY = this.y + (this.height / 2.0);</span>
+
+<span class="s">      if (v.y &lt;= midY) {</span>
+<span class="s">	if (v.x &gt;= midX)</span>
+<span class="s">	  return 1;</span>
+<span class="s">	else</span>
+<span class="s">	  return 2;</span>
+<span class="s">      }</span>
+<span class="s">      else {</span>
+<span class="s">	if (v.x &lt;= midX)</span>
+<span class="s">	  return 3;</span>
+<span class="s">	else</span>
+<span class="s">	  return 4;</span>
+<span class="s">      }</span>
+<span class="s">    }</span>
+<span class="s">  }</span>
+
+<span class="s">  function getView (viewer) {</span>
+<span class="s">    var view = viewer.getAttribute (&#39;viewBox&#39;);</span>
+<span class="s">    view = view.split (&#39; &#39;);</span>
+<span class="s">    return new ViewBox (view[0], view[1], view[2], view[3]);</span>
+<span class="s">  }</span>
+
+<span class="s">  function vect (x, y) {</span>
+<span class="s">    this.x = x;</span>
+<span class="s">    this.y = y;</span>
+<span class="s">  }</span>
+
+<span class="s">  function pos (node) {</span>
+<span class="s">    var x, y;</span>
+<span class="s">    if (node.getAttribute (&#39;x&#39;)) {</span>
+<span class="s">      x = node.getAttribute (&#39;x&#39;);</span>
+<span class="s">      y = node.getAttribute (&#39;y&#39;);</span>
+<span class="s">    }</span>
+<span class="s">    else if (node.getAttribute (&#39;cx&#39;)) {</span>
+<span class="s">      x = node.getAttribute (&#39;cx&#39;);</span>
+<span class="s">      y = node.getAttribute (&#39;cy&#39;);</span>
+<span class="s">    }</span>
+<span class="s">    x = parseFloat (x);</span>
+<span class="s">    y = parseFloat (y);</span>
+<span class="s">    return new vect (x, y);</span>
+<span class="s">  }</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">jsHighlight</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">  function highlight (event) {</span>
+<span class="s">    this.setAttribute (&#39;fill&#39;, this.getAttribute (&#39;highlight-fill&#39;));</span>
+<span class="s">  }</span>
+
+<span class="s">  function unHighlight (event) {</span>
+<span class="s">    this.setAttribute (&#39;fill&#39;, this.getAttribute (&#39;default-fill&#39;));</span>
+<span class="s">  }</span>
+
+<span class="s">  function addHighlights (node) {</span>
+<span class="s">    if (node.getAttribute) {</span>
+<span class="s">      if (node.getAttribute (&#39;has-highlight&#39;)) {</span>
+<span class="s">        node.setAttribute (&#39;default-fill&#39;, node.getAttribute (&#39;fill&#39;));</span>
+<span class="s">        registerEvent (node, &#39;mouseover&#39;, highlight, node);</span>
+<span class="s">        registerEvent (node, &#39;mouseout&#39;, unHighlight, node);</span>
+<span class="s">      }</span>
+<span class="s">      for (var i = 0; i &lt; node.childNodes.length; i ++) {</span>
+<span class="s">        addHighlights (node.childNodes[i]);</span>
+<span class="s">      }</span>
+<span class="s">    }</span>
+<span class="s">  }</span>
+
+<span class="s">  registerEvent (window, &#39;load&#39;, function () {</span>
+<span class="s">                                   var root = document.getElementById (&#39;canvas-root&#39;);</span>
+<span class="s">                                   addHighlights (root); </span>
+<span class="s">                                 });</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">applySettings</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filenameOrDict</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="p">(</span><span class="n">filenameOrDict</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="nb">file</span> <span class="o">=</span> <span class="nb">open</span> <span class="p">(</span><span class="n">filenameOrDict</span><span class="p">)</span>
+            <span class="nb">buffer</span> <span class="o">=</span> <span class="nb">file</span><span class="o">.</span><span class="n">read</span> <span class="p">()</span>
+            <span class="n">setList</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">buffer</span><span class="o">.</span><span class="n">split</span> <span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">len</span> <span class="p">(</span><span class="n">child</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">child</span><span class="o">.</span><span class="n">startswith</span> <span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="n">pair</span> <span class="o">=</span> <span class="n">match</span> <span class="p">(</span><span class="s">&#39;^([^=]+)=(.*)$&#39;</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">pair</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&#39;Warning, Bad formatting in line: &#39;</span> <span class="o">+</span> <span class="n">child</span>
+                    <span class="k">continue</span>
+                <span class="n">key</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">group</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">group</span> <span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+                <span class="n">setList</span><span class="o">.</span><span class="n">append</span> <span class="p">((</span><span class="n">key</span><span class="o">.</span><span class="n">strip</span> <span class="p">(),</span> <span class="n">value</span><span class="o">.</span><span class="n">strip</span> <span class="p">()))</span>
+            <span class="n">settings</span> <span class="o">=</span> <span class="n">blank</span> <span class="p">()</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">setList</span><span class="p">:</span>
+                <span class="nb">setattr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">type</span> <span class="p">(</span><span class="n">filenameOrDict</span><span class="p">)</span> <span class="o">==</span> <span class="nb">dict</span><span class="p">:</span>
+            <span class="n">settings</span> <span class="o">=</span> <span class="n">blank</span> <span class="p">()</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">filenameOrDict</span><span class="o">.</span><span class="n">iteritems</span> <span class="p">():</span>
+                <span class="nb">setattr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="nb">str</span> <span class="p">(</span><span class="n">value</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span> <span class="p">(</span><span class="s">&#39;Bad type for settings&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">formatSettings</span> <span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">formatSettings</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;width&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">300.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;height&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">200.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;fixedWidth&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;titleSize&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;xLabelSize&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;yLabelSize&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;y2LabelSize&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">)</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;leftMargin&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;rightMargin&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;topMargin&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;bottomMargin&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;titleSpace&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;xLabelSpace&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;yLabelSpace&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;y2LabelSpace&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;tooltipSize&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">7.0</span><span class="p">)</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;legendTextHeight&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">7.0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span>
+
+    <span class="k">def</span> <span class="nf">initialFormatting</span>  <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># Format Label Group</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">Group</span> <span class="p">(</span><span class="n">className</span> <span class="o">=</span> <span class="s">&#39;labels&#39;</span><span class="p">)</span>
+
+        <span class="c"># Format Title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">Text</span> <span class="p">(</span><span class="n">text</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="p">,</span> 
+                           <span class="nb">id</span> <span class="o">=</span> <span class="s">&#39;title&#39;</span><span class="p">,</span> 
+                           <span class="n">textHeight</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">titleSize</span><span class="p">,</span> 
+                           <span class="n">horizontalAnchor</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span><span class="p">)</span>
+
+        <span class="c"># Format X Label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span> <span class="o">=</span> <span class="n">Text</span> <span class="p">(</span><span class="n">text</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="p">,</span> 
+                            <span class="nb">id</span> <span class="o">=</span> <span class="s">&#39;xlabel&#39;</span><span class="p">,</span> 
+                            <span class="n">textHeight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">xLabelSize</span><span class="p">,</span> 
+                            <span class="n">verticalAnchor</span> <span class="o">=</span> <span class="s">&#39;top&#39;</span><span class="p">,</span> 
+                            <span class="n">horizontalAnchor</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span><span class="p">)</span>
+
+        <span class="c"># Format Y Label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span> <span class="o">=</span> <span class="n">Group</span> <span class="p">()</span>
+        <span class="n">ylabelRotate</span> <span class="o">=</span> <span class="n">Rotate</span> <span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span><span class="o">.</span><span class="n">appendTransform</span> <span class="p">(</span><span class="n">ylabelRotate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ylabelText</span> <span class="o">=</span> <span class="n">Text</span> <span class="p">(</span><span class="n">text</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="p">,</span>
+                                <span class="nb">id</span> <span class="o">=</span> <span class="s">&#39;ylabel&#39;</span><span class="p">,</span> 
+                                <span class="n">textHeight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">yLabelSize</span><span class="p">,</span>  
+                                <span class="n">horizontalAnchor</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span><span class="o">.</span><span class="n">draw</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ylabelText</span><span class="p">)</span>
+
+        <span class="c"># Format Y2 Label</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y2label</span> <span class="o">=</span> <span class="n">Group</span> <span class="p">()</span>
+        <span class="n">y2labelRotate</span> <span class="o">=</span> <span class="n">Rotate</span> <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y2label</span><span class="o">.</span><span class="n">appendTransform</span> <span class="p">(</span><span class="n">y2labelRotate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y2labelText</span> <span class="o">=</span> <span class="n">Text</span> <span class="p">(</span><span class="n">text</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="p">,</span> 
+                                 <span class="nb">id</span> <span class="o">=</span> <span class="s">&#39;y2label&#39;</span><span class="p">,</span> 
+                                 <span class="n">textHeight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">y2LabelSize</span><span class="p">,</span>  
+                                 <span class="n">horizontalAnchor</span> <span class="o">=</span> <span class="s">&#39;center&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y2label</span><span class="o">.</span><span class="n">draw</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y2labelText</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">leg</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">positionLabels</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="p">:</span>
+            <span class="n">topY</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">height</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">midX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">width</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="n">midY</span> <span class="o">=</span> <span class="n">topY</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">height</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">midX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="n">midY</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+        <span class="c"># Title Position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">topMargin</span><span class="p">)</span>    
+        <span class="c">#self.title.move (midX, self.settings.topMargin)</span>
+
+        <span class="c"># Y Label Position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ylabelText</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="o">-</span><span class="n">midY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">leftMargin</span><span class="p">)</span>
+    
+        <span class="c"># X Label Position</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">leg</span><span class="p">:</span>
+            <span class="n">modX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">leg</span><span class="o">.</span><span class="n">height</span> <span class="o">+</span> <span class="mi">30</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">modX</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="n">midX</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span><span class="n">modX</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">bottomMargin</span><span class="p">)</span> 
+        <span class="c">#self.xlabel.move (midX, self.settings.height - self.canvas.y + self.xlabel.textHeight + 10)</span>
+
+        <span class="c"># Y2 Label Position</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y2labelText</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">width</span> <span class="o">+</span> <span class="n">midY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">rightMargin</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setTitle</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">setText</span> <span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">draw</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="p">:</span>
+            <span class="n">deltaY</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">height</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">titleSpace</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">changeSize</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">deltaY</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setXLabel</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xlabel</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span><span class="o">.</span><span class="n">setText</span> <span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">draw</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="p">:</span>
+            <span class="n">deltaY</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlabel</span><span class="o">.</span><span class="n">height</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">xLabelSpace</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">deltaY</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">changeSize</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">deltaY</span><span class="p">)</span> 
+
+    <span class="k">def</span> <span class="nf">setYLabel</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ylabel</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ylabelText</span><span class="o">.</span><span class="n">setText</span> <span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">draw</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ylabel</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="p">:</span>
+            <span class="n">deltaX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ylabelText</span><span class="o">.</span><span class="n">height</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">yLabelSpace</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="n">deltaX</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">changeSize</span> <span class="p">(</span><span class="o">-</span><span class="n">deltaX</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">addSubtitle</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Text</span> <span class="p">(</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="p">,</span>
+                  <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">5</span><span class="p">,</span>
+                  <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">5</span><span class="p">,</span>
+                  <span class="n">horizontalAnchor</span> <span class="o">=</span> <span class="s">&#39;right&#39;</span><span class="p">,</span>
+                  <span class="n">verticalAnchor</span> <span class="o">=</span> <span class="s">&#39;bottom&#39;</span><span class="p">,</span>
+                  <span class="n">textHeight</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span>
+                 <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">12</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">changeSize</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">12</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span> <span class="p">(</span><span class="n">t</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">addLegend</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pairs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span> <span class="p">(</span><span class="n">pairs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="sd">&quot;&quot;&quot;self.leg = Legend (width = self.settings.width, textHeight = self.settings.legendTextHeight)</span>
+<span class="sd">        keys = pairs.keys ()</span>
+<span class="sd">        keys.sort ()</span>
+<span class="sd">        for k in keys:</span>
+<span class="sd">            self.leg.addKey (k, pairs[k])</span>
+<span class="sd">        self.leg.y = self.settings.height - self.leg.height</span>
+<span class="sd">        self.canvas.move (0, self.leg.height + 20)</span>
+<span class="sd">        self.canvas.changeSize (0, -(self.leg.height + 20))</span>
+<span class="sd">        self.draw (self.leg)&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">leg</span> <span class="o">=</span> <span class="n">Legend</span> <span class="p">(</span><span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">,</span> <span class="n">textHeight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">legendTextHeight</span><span class="p">)</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="n">pairs</span><span class="o">.</span><span class="n">keys</span> <span class="p">()</span>
+        <span class="n">keys</span><span class="o">.</span><span class="n">sort</span> <span class="p">()</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">leg</span><span class="o">.</span><span class="n">addKey</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">pairs</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">changeSize</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">leg</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">leg</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">height</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">leg</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">width</span>
+        <span class="c">#self.leg.y = self.settings.height - self.leg.height</span>
+        <span class="c">#self.canvas.move (0, self.leg.height + 20)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">draw</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">leg</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">setY2Label</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ylabel</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y2labelText</span><span class="o">.</span><span class="n">setText</span> <span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="o">.</span><span class="n">draw</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y2label</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="p">:</span>
+            <span class="n">deltaX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y2labelText</span><span class="o">.</span><span class="n">height</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">y2LabelSpace</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">changeSize</span> <span class="p">(</span><span class="o">-</span><span class="n">deltaX</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setSVG</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finalize</span> <span class="p">()</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="n">PrintableCanvas</span><span class="o">.</span><span class="n">setSVG</span> <span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">fixedWidth</span><span class="p">:</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">fixedWidth</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+            <span class="n">attr</span><span class="o">.</span><span class="n">update</span> <span class="p">([(</span><span class="s">&#39;width&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">fixedWidth</span><span class="p">),</span>
+                          <span class="p">(</span><span class="s">&#39;height&#39;</span><span class="p">,</span> <span class="n">height</span><span class="p">)])</span> 
+        <span class="k">return</span> <span class="n">attr</span>
+
+    <span class="k">def</span> <span class="nf">finalize</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataGroup</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">set</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataGroup</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">set</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">viewBox</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">viewBox</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">positionLabels</span> <span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">drawAt</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">UnifiedGraph</span> <span class="p">(</span><span class="n">BaseGraph</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span>  <span class="o">**</span><span class="n">attr</span><span class="p">):</span></div>
+        <span class="n">BaseGraph</span><span class="o">.</span><span class="n">__init__</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canvas</span><span class="p">,</span> <span class="o">**</span><span class="n">attr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addScript</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jsCanvasZone</span> <span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">addScript</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">jsTooltip</span> <span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setProperties</span> <span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xlabels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ylabels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ypositions</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y2labels</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">formatSettings</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+        <span class="n">BaseGraph</span><span class="o">.</span><span class="n">formatSettings</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">)</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;xAxisSpace&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;yAxisSpace&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;y2AxisSpace&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;xAxisMaxWidth&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;yAxisMaxWidth&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;y2AxisMaxWidth&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">)</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;horizontalGrid&#39;</span><span class="p">,</span> <span class="n">boolean</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;verticalGrid&#39;</span><span class="p">,</span> <span class="n">boolean</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;yAxisMaxLines&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;xAxisTextHeight&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;yAxisTextHeight&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;y2AxisTextHeight&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">)</span> 
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;bg&#39;</span><span class="p">,</span> <span class="n">boolean</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;bgBarDir&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s">&#39;horizontal&#39;</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;bgBars&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;bgColor1&#39;</span><span class="p">,</span> <span class="n">hex_to_color</span><span class="p">,</span> <span class="n">hex_to_color</span> <span class="p">(</span><span class="s">&#39;efefef&#39;</span><span class="p">))</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;bgColor2&#39;</span><span class="p">,</span> <span class="n">hex_to_color</span><span class="p">,</span> <span class="n">hex_to_color</span> <span class="p">(</span><span class="s">&#39;c1c1c1&#39;</span><span class="p">))</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;canvasBorder&#39;</span><span class="p">,</span> <span class="n">boolean</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;canvasBorderStyle&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="s">&#39;square&#39;</span><span class="p">);</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;canvasBorderWidth&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;canvasBorderColor&#39;</span><span class="p">,</span> <span class="n">hex_to_color</span><span class="p">,</span> <span class="n">Color</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;tooltipXOffset&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;tooltipYOffset&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;tooltipXPadding&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
+        <span class="n">addAttr</span> <span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="s">&#39;tooltipYPadding&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">jsCanvasZone</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">  function addCanvasZone (event) {</span>
+<span class="s">    var canvasRoot = document.getElementById (&#39;canvas-root&#39;);</span>
+<span class="s">    var canvasRect = document.createElementNS (&#39;http://www.w3.org/2000/svg&#39;, &#39;rect&#39;);</span>
+<span class="s">    canvasRect.id = &#39;canvas-rect&#39;;</span>
+<span class="s">    var view = getView (canvasRoot);</span>
+<span class="s">    canvasRect.setAttribute (&#39;x&#39;, view.x);</span>
+<span class="s">    canvasRect.setAttribute (&#39;y&#39;, view.y);</span>
+<span class="s">    canvasRect.setAttribute (&#39;width&#39;, view.width);</span>
+<span class="s">    canvasRect.setAttribute (&#39;height&#39;, view.height);</span>
+<span class="s">    canvasRect.setAttribute (&#39;opacity&#39;, 0);</span>
+<span class="s">    canvasRoot.insertBefore (canvasRect, canvasRoot.childNodes[0]);</span>
+<span class="s">  }</span>
+
+<span class="s">  registerEvent (window, &#39;load&#39;, addCanvasZone);</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">jsTooltip</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span> <span class="p">()</span><span class="o">.</span><span class="n">settings</span>
+        <span class="k">return</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">  function Tooltip (root) {</span>
+<span class="s">    var canvasRoot = root;</span>
+<span class="s">    var tooltipGroup;</span>
+<span class="s">    var tooltipPath;</span>
+<span class="s">    var tooltipTextNode;</span>
+<span class="s">    var tooltipText;</span>
+<span class="s">    var xPadding = &quot;&quot;&quot;</span> <span class="o">+</span> <span class="nb">str</span> <span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">tooltipXPadding</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&quot;&quot;;</span>
+<span class="s">    var yPadding = &quot;&quot;&quot;</span> <span class="o">+</span> <span class="nb">str</span> <span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">tooltipYPadding</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&quot;&quot;; </span>
+<span class="s">    var xOffset = &quot;&quot;&quot;</span> <span class="o">+</span> <span class="nb">str</span> <span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">tooltipXOffset</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&quot;&quot;;</span>
+<span class="s">    var yOffset = &quot;&quot;&quot;</span> <span class="o">+</span> <span class="nb">str</span> <span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">tooltipYOffset</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&quot;&quot;;</span>
+
+<span class="s">    this.setText = function (value) {</span>
+<span class="s">      tooltipText.nodeValue = value;</span>
+<span class="s">      setPath ();</span>
+<span class="s">      positionText ();</span>
+<span class="s">    }</span>
+
+<span class="s">    this.move = function (target) {</span>
+<span class="s">      var v = pos (target);</span>
+<span class="s">&quot;&quot;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">jsChangeTooltipPos</span> <span class="p">()</span> <span class="o">+</span> <span class="s">&quot;&quot;&quot;   </span>
+<span class="s">      var o = getOffset (target);</span>
+<span class="s">      var transform = &#39;translate(&#39; + (v.x + o.x) + &#39; &#39; + (v.y + o.y) + &#39;)&#39;;</span>
+<span class="s">      tooltipGroup.setAttribute (&#39;transform&#39;, transform);</span>
+<span class="s">    }</span>
+
+<span class="s">    this.show = function () {</span>
+<span class="s">      tooltipGroup.setAttribute (&#39;visibility&#39;, &#39;visible&#39;);</span>
+<span class="s">    }</span>
+
+<span class="s">    this.hide = function (event) {</span>
+<span class="s">      tooltipGroup.setAttribute (&#39;visibility&#39;, &#39;hidden&#39;);</span>
+<span class="s">    }</span>
+
+<span class="s">    var setPath = function () {</span>
+<span class="s">      var width = parseFloat (tooltipTextNode.getBBox().width) + xPadding;</span>
+<span class="s">      var height = parseFloat (tooltipTextNode.getBBox ().height) + yPadding;</span>
+<span class="s">      var data = &#39;M 0 0 &#39;;</span>
+<span class="s">      data += &#39;L &#39; + width + &#39; 0 &#39;;</span>
+<span class="s">      data += &#39;L &#39; + width + &#39; &#39; + height + &#39; &#39;;</span>
+<span class="s">      data += &#39;L &#39; + 0 + &#39; &#39; + height + &#39; &#39;;</span>
+<span class="s">      data += &#39;Z&#39;;</span>
+<span class="s">      tooltipPath.setAttribute (&#39;d&#39;, data);</span>
+<span class="s">    }</span>
+
+<span class="s">    var positionText = function () {</span>
+<span class="s">        tooltipTextNode.setAttribute (&#39;x&#39;, 0);</span>
+<span class="s">        tooltipTextNode.setAttribute (&#39;y&#39;, 0);</span>
+<span class="s">        var box = tooltipTextNode.getBBox ();</span>
+<span class="s">        tooltipTextNode.setAttribute (&#39;x&#39;, xPadding / 2.0);</span>
+<span class="s">        tooltipTextNode.setAttribute (&#39;y&#39;, -box.y + (yPadding / 2.0));</span>
+
+<span class="s">    }</span>
+
+<span class="s">    var getOffset = function (target) {</span>
+<span class="s">      var v = pos (target);</span>
+<span class="s">      var x, y;</span>
+<span class="s">      var targetWidth;</span>
+<span class="s">&quot;&quot;&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">jsChangeTooltipPos</span> <span class="p">()</span> <span class="o">+</span> <span class="s">&quot;&quot;&quot;   </span>
+<span class="s">      var width = parseFloat (tooltipTextNode.getBBox().width);</span>
+<span class="s">      var height = parseFloat (tooltipTextNode.getBBox ().height);</span>
+<span class="s">      quad = getView (canvasRoot).quadrant (v);</span>
+<span class="s">      switch (quad) {</span>
+<span class="s">      case 1:</span>
+<span class="s">        x = -(width + xPadding + xOffset);</span>
+<span class="s">        y = yOffset;</span>
+<span class="s">        break;</span>
+<span class="s">      case 2:</span>
+<span class="s">        x = xOffset;</span>
+<span class="s">        y = yOffset;</span>
+<span class="s">        break;</span>
+<span class="s">      case 3:</span>
+<span class="s">        x = xOffset;</span>
+<span class="s">        y = -(height + yPadding + yOffset);</span>
+<span class="s">        break;</span>
+<span class="s">      case 4:</span>
+<span class="s">        x = -(width + xPadding + xOffset);</span>
+<span class="s">        y = -(height + yPadding + yOffset);</span>
+<span class="s">      }</span>
+<span class="s">      return new vect (x, y);</span>
+<span class="s">    }</span>
+
+<span class="s">    var tooltipDOM = function () {</span>
+<span class="s">      tooltipGroup = document.createElementNS (&#39;http://www.w3.org/2000/svg&#39;, &#39;g&#39;);</span>
+<span class="s">      tooltipPath = document.createElementNS (&#39;http://www.w3.org/2000/svg&#39;, &#39;path&#39;);</span>
+<span class="s">      tooltipTextNode = document.createElementNS (&#39;http://www.w3.org/2000/svg&#39;, &#39;text&#39;);</span>
+<span class="s">      tooltipText = document.createTextNode (&#39;TestNode&#39;);</span>
+
+<span class="s">      tooltipPath.setAttribute (&#39;fill&#39;, &#39;white&#39;);</span>
+<span class="s">      tooltipPath.setAttribute (&#39;stroke&#39;, &#39;black&#39;);</span>
+
+<span class="s">      tooltipTextNode.setAttribute (&#39;font-family&#39;, &#39;arial, sans-serif&#39;);</span>
+<span class="s">      tooltipTextNode.setAttribute (&#39;font-size&#39;, &quot;&quot;&quot;</span> <span class="o">+</span> <span class="nb">str</span> <span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">tooltipSize</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&quot;&quot;);</span>
+<span class="s">      tooltipTextNode.setAttribute (&#39;text-anchor&#39;, &#39;start&#39;);</span>
+
+<span class="s">      canvasRoot.appendChild (tooltipGroup);</span>
+<span class="s">      tooltipGroup.appendChild (tooltipPath);</span>
+<span class="s">      tooltipGroup.appendChild (tooltipTextNode);</span>
+<span class="s">      tooltipTextNode.appendChild (tooltipText);</span>
+
+<span class="s">      this.hide ();</span>
+
+<span class="s">      setEvents.call (this, canvasRoot);</span>
+<span class="s">    }</span>
+
+<span class="s">    var onHover = function (event) {</span>
+<span class="s">      var target = event.target;</span>
+<span class="s">      p = pos (target);  </span>
+<span class="s">      this.setText (target.getAttribute (&#39;tooltip-text&#39;));</span>
+<span class="s">      this.move (target);</span>
+<span class="s">      this.show ();</span>
+<span class="s">    }</span>
+
+<span class="s">    var unHover = function (event) {</span>
+<span class="s">      this.hide ();</span>
+<span class="s">    }</span>
+
+<span class="s">    var setEvents = function (node) {</span>
+<span class="s">      if (node.getAttribute) {</span>
+<span class="s">        if (node.getAttribute (&#39;has-tooltip&#39;) &amp;&amp; node.getAttribute (&#39;has-tooltip&#39;) != &#39;False&#39;) {</span>
+<span class="s">          registerEvent (node, &#39;mouseover&#39;, onHover, this);</span>
+<span class="s">          registerEvent (node, &#39;mouseout&#39;, unHover, this);</span>
+<span class="s">        }</span>
+<span class="s">        for (var i = 0; i &lt; node.childNodes.length; i ++) {</span>
+<span class="s">          setEvents.call (this, node.childNodes[i]);</span>
+<span class="s">        }</span>
+<span class="s">      }</span>
+<span class="s">    }</span>
+
+<span class="s">    tooltipDOM.call (this);</span>
+<span class="s">  }</span>
+
+<span class="s">  registerEvent (window, &#39;load&#39;, function () {</span>
+<span class="s">                                   var root = document.getElementById (&#39;canvas-root&#39;);</span>
+<span class="s">                                   var t = new Tooltip (root);</span>
+<span class="s">                                 });</span>
+<span class="s">&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">jsChangeTooltipPos</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">      if (target.getAttribute (&#39;width&#39;))</span>
+<span class="s">        targetWidth = parseFloat (target.getAttribute (&#39;width&#39;));</span>
+<span class="s">      else</span>
+<span class="s">        targetWidth = 0;</span>
+<span class="s">      targetWidth /= 2.0;</span>
+<span class="s">      v.x += targetWidth; &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">setProperties</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xaxis</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">yaxis</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y2axis</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="k">def</span> <span class="nf">boundingBox</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">canvasBorder</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">canvasBorderStyle</span> <span class="o">==</span> <span class="s">&#39;square&#39;</span><span class="p">:</span>
+            <span class="n">bbox</span> <span class="o">=</span> <span class="n">Rectangle</span> <span class="p">(</span><span class="n">x</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                              <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                              <span class="n">width</span><span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> 
+                              <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">canvasBorderStyle</span> <span class="o">==</span> <span class="s">&#39;L&#39;</span><span class="p">:</span>
+            <span class="n">bbox</span> <span class="o">=</span> <span class="n">Path</span> <span class="p">()</span>
+            <span class="n">bbox</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+            <span class="n">bbox</span><span class="o">.</span><span class="n">line</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+            <span class="n">bbox</span><span class="o">.</span><span class="n">line</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">bbox</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">strokeColor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">canvasBorderColor</span>
+        <span class="n">bbox</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">strokeWidth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">canvasBorderWidth</span>
+        <span class="n">bbox</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">fill</span> <span class="o">=</span> <span class="s">&#39;none&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataGroup</span><span class="o">.</span><span class="n">draw</span> <span class="p">(</span><span class="n">bbox</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">background</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">bg</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">numBars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">bgBars</span>
+        <span class="n">color1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">bgColor1</span>
+        <span class="n">color2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">bgColor2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">bgBarDir</span> <span class="o">==</span> <span class="s">&#39;vertical&#39;</span><span class="p">:</span>
+            <span class="n">barHeight</span> <span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">height</span>
+            <span class="n">barWidth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">width</span> <span class="o">/</span> <span class="nb">float</span> <span class="p">(</span><span class="n">numBars</span><span class="p">)</span>
+            <span class="n">offsetW</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">offsetH</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>    
+            <span class="n">barHeight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">height</span> <span class="o">/</span> <span class="nb">float</span> <span class="p">(</span><span class="n">numBars</span><span class="p">)</span>
+            <span class="n">barWidth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">width</span>
+            <span class="n">offsetW</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">offsetH</span> <span class="o">=</span> <span class="mf">1.0</span>
+        
+            
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="n">numBars</span><span class="p">):</span>
+            <span class="n">rect</span> <span class="o">=</span> <span class="n">Rectangle</span> <span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">barWidth</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">offsetW</span><span class="p">),</span>
+                              <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">barHeight</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">offsetH</span><span class="p">),</span>
+                              <span class="n">width</span> <span class="o">=</span> <span class="n">barWidth</span><span class="p">,</span>
+                              <span class="n">height</span> <span class="o">=</span> <span class="n">barHeight</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">fill</span> <span class="o">=</span> <span class="n">color1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">fill</span> <span class="o">=</span> <span class="n">color2</span>
+            <span class="n">rect</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">fill</span> <span class="o">=</span> <span class="n">fill</span>
+            <span class="n">rect</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">strokeWidth</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">rect</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">opacity</span> <span class="o">=</span> <span class="o">.</span><span class="mi">35</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dataGroup</span><span class="o">.</span><span class="n">drawAt</span> <span class="p">(</span><span class="n">rect</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setXBounds</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xbounds</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">minX</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">maxX</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setYBounds</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ybounds</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">minY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">maxY</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setY2Bounds</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y2bounds</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">minY2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">maxY2</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">createXAxisSpace</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">xAxisTextHeight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">changeSize</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">xAxisTextHeight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xAxisPos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">xAxisSpace</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">changeSize</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">xAxisSpace</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">createXAxis</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">textProperties</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;textHeight&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">xAxisTextHeight</span><span class="p">,</span>
+                          <span class="s">&#39;horizontalAnchor&#39;</span><span class="p">:</span> <span class="s">&#39;center&#39;</span><span class="p">,</span>
+                          <span class="p">}</span>
+        <span class="n">xaxis</span> <span class="o">=</span> <span class="n">XAxis</span> <span class="p">(</span><span class="nb">id</span> <span class="o">=</span> <span class="s">&#39;x-axis&#39;</span><span class="p">,</span>
+                       <span class="n">inf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+                       <span class="n">sup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                       <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xAxisPos</span><span class="p">,</span>
+                       <span class="n">lower</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xbounds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                       <span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xbounds</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                       <span class="n">has_lines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">verticalGrid</span><span class="p">,</span>
+                       <span class="n">line_height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">height</span><span class="p">,</span>
+                       <span class="n">textProperties</span> <span class="o">=</span> <span class="n">textProperties</span><span class="p">)</span>
+        <span class="n">xaxis</span><span class="o">.</span><span class="n">createTicks</span> <span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xlabels</span><span class="p">:</span>
+            <span class="n">xaxis</span><span class="o">.</span><span class="n">setText</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xlabels</span><span class="p">)</span>
+        <span class="n">xaxis</span><span class="o">.</span><span class="n">drawTicks</span> <span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataGroup</span><span class="o">.</span><span class="n">drawAt</span> <span class="p">(</span><span class="n">xaxis</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">createYAxis</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">textProperties</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;textHeight&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">yAxisTextHeight</span><span class="p">,</span>
+                          <span class="s">&#39;horizontalAnchor&#39;</span><span class="p">:</span> <span class="s">&#39;right&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;verticalAnchor&#39;</span><span class="p">:</span> <span class="s">&#39;middle&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;lineLength&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">yAxisMaxWidth</span><span class="p">,</span>
+                          <span class="s">&#39;maxLines&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">yAxisMaxLines</span><span class="p">,</span>
+                          <span class="p">}</span>
+        <span class="n">yaxis</span> <span class="o">=</span> <span class="n">YAxis</span> <span class="p">(</span><span class="n">inf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                       <span class="n">sup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">height</span><span class="p">,</span>
+                       <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                       <span class="n">lower</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ybounds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                       <span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ybounds</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                       <span class="n">has_lines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">horizontalGrid</span><span class="p">,</span>
+                       <span class="n">line_height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                       <span class="n">textProperties</span> <span class="o">=</span> <span class="n">textProperties</span><span class="p">)</span>
+        <span class="n">yaxis</span><span class="o">.</span><span class="n">createTicks</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ypositions</span><span class="p">)</span>
+        <span class="n">yaxis</span><span class="o">.</span><span class="n">setText</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ylabels</span><span class="p">)</span>
+        <span class="n">yaxis</span><span class="o">.</span><span class="n">drawTicks</span> <span class="p">()</span>
+        <span class="n">yaxis</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">yaxis</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">changeSize</span> <span class="p">(</span><span class="o">-</span><span class="n">yaxis</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">yAxisSpace</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="n">yaxis</span><span class="o">.</span><span class="n">width</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">yAxisSpace</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataGroup</span><span class="o">.</span><span class="n">drawAt</span> <span class="p">(</span><span class="n">yaxis</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">createY2Axis</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ybounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y2bounds</span>
+        <span class="n">textProperties</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;textHeight&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">y2AxisTextHeight</span><span class="p">,</span>
+                          <span class="s">&#39;horizontalAnchor&#39;</span><span class="p">:</span> <span class="s">&#39;left&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;verticalAnchor&#39;</span><span class="p">:</span> <span class="s">&#39;middle&#39;</span><span class="p">,</span>
+                          <span class="p">}</span>
+        <span class="n">yaxis</span> <span class="o">=</span> <span class="n">YAxis</span> <span class="p">(</span><span class="n">inf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+                       <span class="n">sup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">height</span><span class="p">,</span>
+                       <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+                       <span class="n">lower</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y2bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                       <span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y2bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                       <span class="n">textProperties</span> <span class="o">=</span> <span class="n">textProperties</span><span class="p">)</span>
+        <span class="n">yaxis</span><span class="o">.</span><span class="n">createTicks</span> <span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">y2labels</span><span class="p">:</span>
+            <span class="n">yaxis</span><span class="o">.</span><span class="n">setText</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y2labels</span><span class="p">)</span>
+        <span class="n">yaxis</span><span class="o">.</span><span class="n">drawTicks</span> <span class="p">()</span>
+        <span class="n">yaxis</span><span class="o">.</span><span class="n">move</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="n">yaxis</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">changeSize</span> <span class="p">(</span><span class="o">-</span><span class="n">yaxis</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">y2AxisSpace</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataGroup</span><span class="o">.</span><span class="n">drawAt</span> <span class="p">(</span><span class="n">yaxis</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">finalize</span> <span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">setBounds</span> <span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xaxis</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setXBounds</span> <span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">createXAxisSpace</span> <span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">yaxis</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setYBounds</span> <span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">createYAxis</span> <span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">y2axis</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setY2Bounds</span> <span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">createY2Axis</span> <span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">xaxis</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">createXAxis</span> <span class="p">()</span>
+        <span class="n">BaseGraph</span><span class="o">.</span><span class="n">finalize</span> <span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">background</span> <span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundingBox</span> <span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">finalize</span> <span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">dotSkapes v0.4 documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li>
+          <li><a href="../graph.html" >modules.savage.graph</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, dotSkapes.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.8.
+    </div>
+  </body>
+</html>
